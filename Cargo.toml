@@ -94,6 +94,7 @@ features = [
   "WebglDrawBuffers",
   "WebglLoseContext",
   "OvrMultiview2",
+  "OculusMultiview",
 ]
 
 [workspace]

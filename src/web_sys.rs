@@ -42,6 +42,7 @@ struct Extensions {
     pub oes_texture_half_float_linear: Option<web_sys::OesTextureHalfFloatLinear>,
     pub oes_vertex_array_object: Option<web_sys::OesVertexArrayObject>,
     pub ovr_multiview2: Option<web_sys::OvrMultiview2>,
+    pub oculus_multiview: Option<web_sys::OculusMultiview>,
     pub webgl_color_buffer_float: Option<web_sys::WebglColorBufferFloat>,
     pub webgl_compressed_texture_astc: Option<web_sys::WebglCompressedTextureAstc>,
     pub webgl_compressed_texture_etc: Option<web_sys::WebglCompressedTextureEtc>,
@@ -183,6 +184,7 @@ macro_rules! build_extensions {
                 "OES_vertex_array_object",
             ),
             ovr_multiview2: get_extension::<web_sys::OvrMultiview2>(&$context, "OVR_multiview2"),
+            oculus_multiview: get_extension::<web_sys::OculusMultiview>(&$context, "OCULUS_multiview"),
             webgl_color_buffer_float: get_extension::<web_sys::WebglColorBufferFloat>(
                 &$context,
                 "WEBGL_color_buffer_float",
@@ -736,6 +738,38 @@ impl Context {
                         attachment,
                         raw_texture,
                         level,
+                        base_view_index,
+                        num_views,
+                    );
+                }
+            }
+        }
+    }
+
+    pub unsafe fn framebuffer_texture_multisample_multiview_ovr(
+        &self,
+        target: u32,
+        attachment: u32,
+        texture: Option<<Self as HasContext>::Texture>,
+        level: i32,
+        samples: i32,
+        base_view_index: i32,
+        num_views: i32,
+    ) {
+        let textures = self.textures.borrow();
+        let raw_texture = texture.map(|t| textures.get_unchecked(t));
+        match self.raw {
+            RawRenderingContext::WebGl1(ref _gl) => {
+                panic!("OVR_multiview2 is not supported in WebGL1")
+            }
+            RawRenderingContext::WebGl2(ref _gl) => {
+                if let Some(ext) = &self.extensions.oculus_multiview {
+                    ext.framebuffer_texture_multisample_multiview_ovr(
+                        target,
+                        attachment,
+                        raw_texture,
+                        level,
+                        samples,
                         base_view_index,
                         num_views,
                     );
